@@ -121,15 +121,17 @@ router.post("/turn", express.raw({ type: () => true, limit: "10mb" }), async (re
 
     const messages = getMessages(sessionId);
     messages.push({ role: "user", content: userText.trim() });
-    await logTurn(sessionId, "user", userText.trim());
+    // Non-blocking log to DB so we don't stall the voice turnaround
+    logTurn(sessionId, "user", userText.trim()).catch((e) => console.error("[logTurn user] notice:", e.message));
 
     const rawReply = await getAIReply(messages);
     const { speech, lead } = extractLead(rawReply);
     messages.push({ role: "assistant", content: speech });
-    await logTurn(sessionId, "assistant", speech);
+    // Non-blocking log to DB
+    logTurn(sessionId, "assistant", speech).catch((e) => console.error("[logTurn bot] notice:", e.message));
 
     if (lead) {
-      try { await createLead(lead); } catch (e) { console.error("[lead] err:", e.message); }
+      createLead(lead).catch((e) => console.error("[lead] err:", e.message));
     }
 
     let audioBase64 = null;
