@@ -4,9 +4,13 @@ let pool;
 
 function getPool() {
   if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
+    let connectionString = process.env.DATABASE_URL;
     if (!connectionString) {
       throw new Error("DATABASE_URL is missing in .env");
+    }
+    // Prevent pg v8.x -> v9.x deprecation warning
+    if (connectionString.includes("sslmode=require")) {
+      connectionString = connectionString.replace("sslmode=require", "sslmode=verify-full");
     }
     pool = new Pool({
       connectionString,

@@ -9,10 +9,14 @@ const path = require("path");
 const { Pool } = require("pg");
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     console.error("DATABASE_URL is missing in .env");
     process.exit(1);
+  }
+
+  if (connectionString.includes("sslmode=require")) {
+    connectionString = connectionString.replace("sslmode=require", "sslmode=verify-full");
   }
 
   const pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
