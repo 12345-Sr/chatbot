@@ -15,7 +15,7 @@ module.exports = {
   role: "AI Business Assistant & Digital Solutions Specialist",
 
   greeting:
-    "Hello! Welcome to Deific Digital. I am your AI assistant. We help businesses with web development, mobile apps, custom software, AI solutions, and digital marketing. How can I assist you today?",
+    "Hello! Welcome to Deific Digital. I am your AI assistant. How can I assist you today?",
 
   services: [
     {
