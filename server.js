@@ -24,7 +24,7 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.json({
     status: "ok",
-    service: "Deific Digital AI Receptionist Backend API",
+    service: "Deific Digital AI Assistant Backend API",
     voice: "English only (no conversion required)",
     endpoints: {
       start: "POST /web/start",

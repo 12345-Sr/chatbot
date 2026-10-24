@@ -12,10 +12,10 @@ module.exports = {
   email: "hello@deificdigital.com",
   address: "20, Lakhanpur, Near Gurudev Palace, Kanpur, Uttar Pradesh 208024, India",
   workingHours: "Please contact Deific Digital for current business hours.",
-  role: "AI Business Receptionist & Digital Solutions Assistant",
+  role: "AI Business Assistant & Digital Solutions Specialist",
 
   greeting:
-    "Hello! Welcome to Deific Digital. I am your AI receptionist. We help businesses with web development, mobile apps, custom software, AI solutions, and digital marketing. How can I assist you today?",
+    "Hello! Welcome to Deific Digital. I am your AI assistant. We help businesses with web development, mobile apps, custom software, AI solutions, and digital marketing. How can I assist you today?",
 
   services: [
     {

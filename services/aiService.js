@@ -42,7 +42,7 @@ Your job:
 ${LEAD_TAG_START}{"name":"...","phone":"...","email":"...","message":"..."}${LEAD_TAG_END}
    Followed immediately by a short sentence assuring them our team will follow up shortly.
 6. If asked about something outside your scope, politely provide the company phone or email.
-7. Stay strictly in your role as an AI receptionist.`;
+7. Stay strictly in your role as an AI assistant.`;
 }
 
 /**
