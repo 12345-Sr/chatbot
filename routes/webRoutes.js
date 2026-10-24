@@ -53,17 +53,17 @@ router.post("/chat", async (req, res) => {
 
     const messages = getMessages(sessionId);
     messages.push({ role: "user", content: message });
-    await logTurn(sessionId, "user", message);
+    logTurn(sessionId, "user", message).catch((e) => console.warn("[db log] user:", e.message));
 
     const rawReply = await getAIReply(messages);
     const { speech, lead } = extractLead(rawReply);
 
     messages.push({ role: "assistant", content: speech });
-    await logTurn(sessionId, "assistant", speech);
+    logTurn(sessionId, "assistant", speech).catch((e) => console.warn("[db log] assistant:", e.message));
 
     let leadCaptured = false;
     if (lead) {
-      await createLead(lead);
+      createLead(lead).catch((e) => console.warn("[db lead]:", e.message));
       leadCaptured = true;
     }
 
@@ -121,17 +121,15 @@ router.post("/turn", express.raw({ type: () => true, limit: "10mb" }), async (re
 
     const messages = getMessages(sessionId);
     messages.push({ role: "user", content: userText.trim() });
-    // Non-blocking log to DB so we don't stall the voice turnaround
-    logTurn(sessionId, "user", userText.trim()).catch((e) => console.error("[logTurn user] notice:", e.message));
+    logTurn(sessionId, "user", userText.trim()).catch((e) => console.warn("[db log] user:", e.message));
 
     const rawReply = await getAIReply(messages);
     const { speech, lead } = extractLead(rawReply);
     messages.push({ role: "assistant", content: speech });
-    // Non-blocking log to DB
-    logTurn(sessionId, "assistant", speech).catch((e) => console.error("[logTurn bot] notice:", e.message));
+    logTurn(sessionId, "assistant", speech).catch((e) => console.warn("[db log] assistant:", e.message));
 
     if (lead) {
-      createLead(lead).catch((e) => console.error("[lead] err:", e.message));
+      createLead(lead).catch((e) => console.warn("[db lead]:", e.message));
     }
 
     let audioBase64 = null;
