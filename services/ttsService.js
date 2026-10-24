@@ -25,9 +25,10 @@ function escapeXml(s) {
 async function azureSynthesize(text, voice) {
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
+  const spokenText = prepareSpeechText(text);
   const ssml =
     `<speak version='1.0' xml:lang='en-US'>` +
-    `<voice xml:lang='en-US' name='${voice}'>${escapeXml(text)}</voice></speak>`;
+    `<voice xml:lang='en-US' name='${voice}'>${escapeXml(spokenText)}</voice></speak>`;
 
   const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: "POST",
@@ -48,7 +49,8 @@ async function edgeSynthesize(text, voice) {
   const tts = new MsEdgeTTS();
   await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
 
-  const result = await tts.toStream(text);
+  const spokenText = prepareSpeechText(text);
+  const result = await tts.toStream(spokenText);
   const stream = result && result.audioStream ? result.audioStream : result;
 
   const chunks = [];
@@ -58,11 +60,18 @@ async function edgeSynthesize(text, voice) {
   return audio;
 }
 
+function prepareSpeechText(text) {
+  if (!text || typeof text !== "string") return "";
+  // Phonetically format "Deific" as "Deeific" so neural voices pronounce "Deific Digital" in one natural, continuous flow without pausing
+  return text.replace(/\bDeific\b/gi, "Deeific");
+}
+
 async function elevenLabsSynthesize(text) {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) throw new Error("ELEVENLABS_API_KEY missing");
   const voiceId = process.env.ELEVENLABS_VOICE_EN || process.env.ELEVENLABS_VOICE_ID || "EXAVITQu4vr4xnSDxMaL";
   const modelId = process.env.ELEVENLABS_MODEL || "eleven_flash_v2_5";
+  const spokenText = prepareSpeechText(text);
 
   const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: "POST",
@@ -71,11 +80,12 @@ async function elevenLabsSynthesize(text) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      text,
+      text: spokenText,
       model_id: modelId,
       voice_settings: {
-        stability: 0.5,
-        similarity_boost: 0.75,
+        stability: 0.65,
+        similarity_boost: 0.8,
+        use_speaker_boost: true,
       },
     }),
   });
