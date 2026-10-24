@@ -67,7 +67,17 @@ router.post("/chat", async (req, res) => {
       leadCaptured = true;
     }
 
-    res.json({ reply: speech, leadCaptured });
+    let audioBase64 = null;
+    try {
+      const { audio } = await synthesize(speech.slice(0, 800));
+      if (audio && audio.length) {
+        audioBase64 = audio.toString("base64");
+      }
+    } catch (e) {
+      console.warn("[/web/chat] tts error:", e.message);
+    }
+
+    res.json({ reply: speech, leadCaptured, audioBase64 });
   } catch (err) {
     console.error("[/web/chat] error:", err);
     res.status(500).json({ error: "AI service error. Check server logs (likely GROQ_API_KEY)." });
