@@ -106,4 +106,51 @@ router.post("/stt", express.raw({ type: () => true, limit: "10mb" }), async (req
   }
 });
 
+// POST /web/turn  (unified low-latency turn: audio -> Whisper STT -> Groq LLM -> ElevenLabs TTS in 1 trip)
+router.post("/turn", express.raw({ type: () => true, limit: "10mb" }), async (req, res) => {
+  try {
+    const sessionId = req.headers["x-session-id"] || req.query.sessionId || "default";
+    if (!Buffer.isBuffer(req.body) || req.body.length < 1000) {
+      return res.json({ text: "", reply: "", audioBase64: null });
+    }
+
+    const userText = await transcribe(req.body, req.headers["content-type"]);
+    if (!userText || !userText.trim()) {
+      return res.json({ text: "", reply: "", audioBase64: null });
+    }
+
+    const messages = getMessages(sessionId);
+    messages.push({ role: "user", content: userText.trim() });
+    await logTurn(sessionId, "user", userText.trim());
+
+    const rawReply = await getAIReply(messages);
+    const { speech, lead } = extractLead(rawReply);
+    messages.push({ role: "assistant", content: speech });
+    await logTurn(sessionId, "assistant", speech);
+
+    if (lead) {
+      try { await createLead(lead); } catch (e) { console.error("[lead] err:", e.message); }
+    }
+
+    let audioBase64 = null;
+    try {
+      const { audio } = await synthesize(speech.slice(0, 800));
+      if (audio && audio.length) {
+        audioBase64 = audio.toString("base64");
+      }
+    } catch (e) {
+      console.warn("[turn] tts error:", e.message);
+    }
+
+    res.json({
+      text: userText.trim(),
+      reply: speech,
+      audioBase64,
+    });
+  } catch (err) {
+    console.error("[/web/turn] error:", err.message);
+    res.status(500).json({ error: "turn failed" });
+  }
+});
+
 module.exports = router;
