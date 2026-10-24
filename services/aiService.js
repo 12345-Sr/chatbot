@@ -57,9 +57,9 @@ async function getAIReply(messages) {
       Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
     },
     body: JSON.stringify({
-      model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
-      temperature: 0.4,
-      max_tokens: 1200,
+      model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b",
+      temperature: 0.3,
+      max_tokens: 400,
       messages: [{ role: "system", content: buildSystemPrompt() }, ...messages],
     }),
   });
